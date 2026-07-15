@@ -1,15 +1,27 @@
+# syntax=docker/dockerfile:1
+
 # ── Build stage ────────────────────────────────────────────────────────────
 FROM python:3.12-slim AS builder
 
 WORKDIR /build
 
-# Copy project metadata + source
-COPY pyproject.toml README.md ./
-COPY bot.py ./
-COPY data/ ./data/
+# Install third-party dependencies before copying application files. This layer
+# is reused when bot.py or data files change and is invalidated only when the
+# project metadata (and therefore potentially its dependencies) changes.
+COPY pyproject.toml ./
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python - <<'PY'
+import subprocess
+import sys
+import tomllib
 
-# Install the project
-RUN pip install --no-cache-dir --prefix=/install .
+with open("pyproject.toml", "rb") as config:
+    dependencies = tomllib.load(config)["project"]["dependencies"]
+
+subprocess.check_call(
+    [sys.executable, "-m", "pip", "install", "--prefix=/install", *dependencies]
+)
+PY
 
 # ── Runtime stage ──────────────────────────────────────────────────────────
 FROM python:3.12-slim
@@ -25,7 +37,8 @@ WORKDIR /app
 # Copy installed packages from builder
 COPY --from=builder /install /usr/local
 
-# Copy application code and data, owned by appuser
+# Keep frequently changed application files in the final layers so changing a
+# JSON data file does not trigger dependency installation.
 COPY --chown=appuser:appuser bot.py .
 COPY --chown=appuser:appuser data/ data/
 
