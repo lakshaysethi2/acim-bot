@@ -106,9 +106,6 @@ acim-bot/
 │   └── lessons.json       # All 365 lesson titles
 ├── tests/
 │   └── test_bot.py        # Smoke tests
-├── .github/
-│   └── workflows/
-│       └── ci.yml         # Lint + test + Docker build
 ├── Dockerfile             # Multi-stage build, health check, non-root user
 ├── docker-compose.yml     # Health check + graceful stop
 ├── Makefile               # build/up/down/logs/health/restart/clean
