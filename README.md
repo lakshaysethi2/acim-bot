@@ -11,7 +11,7 @@ Look up the title of any of the 365 ACIM Workbook lessons by number.
 
 ## Features
 
-- 📖 `/acim <1–365>` slash command (Discord) or `/acim <1–365>` command (Telegram)
+- 📖 `/acim <1–365>` or `/acim random` command (Discord & Telegram)
 - Returns the title of the requested lesson
 - Discord responses use markdown escaping to prevent formatting/ping issues
 - Telegram includes `/start` and `/help` commands for discoverability

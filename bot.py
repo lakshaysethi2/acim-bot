@@ -7,6 +7,7 @@ Responds with the title of any of the 365 ACIM Workbook lessons.
 import json
 import logging
 import os
+import random
 import signal
 import sys
 from pathlib import Path
@@ -191,15 +192,25 @@ def _build_discord_bot() -> commands.Bot:
         name="acim",
         description="Look up an ACIM Workbook lesson by number (1–365)",
     )
-    @app_commands.describe(lesson="Lesson number (1–365)")
-    async def acim(interaction: discord.Interaction, lesson: int) -> None:
-        if lesson < 1 or lesson > TOTAL_LESSONS:
+    @app_commands.rename(is_random="random")
+    @app_commands.describe(
+        lesson="Lesson number (1–365)",
+        is_random="Get a random lesson (overrides lesson number)"
+    )
+    async def acim(
+        interaction: discord.Interaction,
+        lesson: int = 0,
+        is_random: bool = False,
+    ) -> None:
+        lesson_num = random.randint(1, TOTAL_LESSONS) if is_random else lesson
+
+        if lesson_num < 1 or lesson_num > TOTAL_LESSONS:
             await interaction.response.send_message(
-                f"⚠️ Lesson number must be between 1 and {TOTAL_LESSONS}.",
+                f"⚠️ Please provide a valid lesson number (1–{TOTAL_LESSONS}) or choose 'random'.",
                 ephemeral=True,
             )
             return
-        title = get_lesson(lesson)
+        title = get_lesson(lesson_num)
         if title is None:
             await interaction.response.send_message(
                 "⚠️ Could not find that lesson.", ephemeral=True
@@ -209,7 +220,7 @@ def _build_discord_bot() -> commands.Bot:
             discord.utils.escape_mentions(title)
         )
         await interaction.response.send_message(
-            f"📖 **Lesson {lesson}**\n{safe_title}"
+            f"📖 **Lesson {lesson_num}**\n{safe_title}"
         )
 
     return bot
@@ -221,8 +232,10 @@ def _build_discord_bot() -> commands.Bot:
 
 TELEGRAM_HELP_TEXT = (
     "📖 A Course in Miracles Bot\n\n"
-    "Use /acim <1-365> to look up a lesson title.\n"
-    "Example: /acim 1"
+    "Use /acim <1-365> to look up a lesson title, or /acim random for a random lesson.\n"
+    "Examples:\n"
+    "  /acim 1\n"
+    "  /acim random"
 )
 
 
@@ -259,13 +272,19 @@ def _run_telegram_bot() -> None:
         if msg is None:
             return
         if not context.args:
-            await msg.reply_text("Usage: /acim <lesson number 1-365>")
+            await msg.reply_text("Usage: /acim <lesson number 1-365> or /acim random")
             return
-        try:
-            lesson = int(context.args[0])
-        except ValueError:
-            await msg.reply_text("⚠️ Please provide a valid number.")
-            return
+        
+        query = context.args[0].strip().lower()
+        if query == "random":
+            lesson = random.randint(1, TOTAL_LESSONS)
+        else:
+            try:
+                lesson = int(query)
+            except ValueError:
+                await msg.reply_text("⚠️ Please provide a valid number or 'random'.")
+                return
+
         if lesson < 1 or lesson > TOTAL_LESSONS:
             await msg.reply_text(
                 f"⚠️ Lesson number must be between 1 and {TOTAL_LESSONS}."
