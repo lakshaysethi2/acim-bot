@@ -85,6 +85,18 @@ python bot.py
 
 ---
 
+## CI
+
+The repo includes a `tests/` directory with smoke tests. To run them locally:
+
+```bash
+pip install ".[dev]"
+BOT_MODE=discord DISCORD_TOKEN=test pytest -q
+```
+
+To add a GitHub Actions CI workflow, create `.github/workflows/ci.yml` — this
+repo's GitHub App permissions don't allow pushing workflow files automatically.
+
 ## Architecture
 
 ```
