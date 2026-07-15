@@ -8,8 +8,8 @@ COPY pyproject.toml README.md ./
 COPY bot.py ./
 COPY data/ ./data/
 
-# Install the project with both discord and telegram extras
-RUN pip install --no-cache-dir --prefix=/install ".[telegram]"
+# Install the project
+RUN pip install --no-cache-dir --prefix=/install .
 
 # ── Runtime stage ──────────────────────────────────────────────────────────
 FROM python:3.12-slim
