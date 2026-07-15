@@ -43,6 +43,32 @@ class TestLessonsJson:
         for key in lessons:
             assert key.isdigit(), f"Non-numeric key: {key!r}"
 
+    def test_review_lesson_titles_format(self, lessons: dict[str, str]) -> None:
+        """Review lessons should have improved descriptive titles (see PR #4)."""
+        import re
+
+        review_lessons = (
+            list(range(51, 61))   # Review I
+            + list(range(81, 91))   # Review II
+            + list(range(111, 121)) # Review III
+            + list(range(141, 151)) # Review IV
+            + list(range(171, 181)) # Review V
+        )
+
+        # Use a strict roman numeral pattern (only I, II, III, IV, V are valid for our reviews)
+        pattern = re.compile(r"^Review (I{1,3}|IV|V) — \(\d+\) .+")
+
+        for n in review_lessons:
+            title = lessons[str(n)]
+            assert pattern.match(title), f"Review lesson {n} title does not match expected format: {title!r}"
+            assert title.strip(), f"Empty title for review lesson {n}"
+
+        # Spot checks for the original complaint (51-53)
+        assert "Nothing I see means anything" in lessons["51"]
+        # For II-V we now include both ideas
+        assert "61" in lessons["81"] and "62" in lessons["81"]
+        assert "91" in lessons["111"] and "92" in lessons["111"]
+
 
 # ---------------------------------------------------------------------------
 # Bot module tests — use monkeypatch to set env vars before import
