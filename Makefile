@@ -33,7 +33,7 @@ health:
 	@docker inspect --format='{{.State.Health.Status}}' acim-bot 2>/dev/null || echo "Container not running"
 
 shell:
-	docker exec -it acim-bot /bin/bash
+	docker exec -it acim-bot /bin/bash || docker exec -i acim-bot /bin/bash
 
 clean:
 	$(COMPOSE) down --rmi all --volumes --remove-orphans

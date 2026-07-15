@@ -2,7 +2,10 @@
 
 A Course in Miracles bot for **Discord** and **Telegram**.
 
-Look up any of the 365 ACIM Workbook lessons by number.
+Look up the title of any of the 365 ACIM Workbook lessons by number.
+
+> **Note:** This bot returns lesson **titles** only, not the full lesson text.
+> The full Workbook text is under copyright by the Foundation for Inner Peace.
 
 ---
 
@@ -10,8 +13,10 @@ Look up any of the 365 ACIM Workbook lessons by number.
 
 - 📖 `/acim <1–365>` slash command (Discord) or `/acim <1–365>` command (Telegram)
 - Returns the title of the requested lesson
+- Discord responses use markdown escaping to prevent formatting/ping issues
+- Telegram includes `/start` and `/help` commands for discoverability
 - Docker-ready with health checks and graceful shutdown
-- Single JSON data file — easy to update
+- Startup validation of lesson data catches corruption immediately
 
 ---
 
@@ -30,9 +35,8 @@ cp .env.example .env
 
 1. Go to the [Discord Developer Portal](https://discord.com/developers/applications)
 2. Create a new application → Bot
-3. Enable **Message Content Intent** (not needed for this bot, but fine to leave on)
-4. Copy the bot token into `.env` as `DISCORD_TOKEN`
-5. Invite the bot to your server with the `applications.commands` scope
+3. Copy the bot token into `.env` as `DISCORD_TOKEN`
+4. Invite the bot to your server with the `applications.commands` scope
 
 ### 3. Telegram setup
 
@@ -58,10 +62,7 @@ make down        # stop
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-
-# For Telegram, also install:
-pip install python-telegram-bot
+pip install .
 
 # Set environment variables, then:
 python bot.py
@@ -73,11 +74,12 @@ python bot.py
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `BOT_MODE` | No | `discord` | `discord` or `telegram` |
-| `DISCORD_TOKEN` | Yes* | — | Discord bot token |
-| `TELEGRAM_TOKEN` | Yes* | — | Telegram bot token |
-| `HEALTH_PORT` | No | `8080` | HTTP port for health checks |
-| `DISCORD_GUILD_ID` | No | — | Restrict command sync to one guild (dev) |
+| `BOT_MODE` | No | `discord` | Must be `discord` or `telegram` |
+| `DISCORD_TOKEN` | Yes\* | — | Discord bot token |
+| `TELEGRAM_TOKEN` | Yes\* | — | Telegram bot token |
+| `HEALTH_PORT` | No | `8080` | HTTP port for health checks (1–65535) |
+| `DISCORD_GUILD_ID` | No | — | Restrict command sync to one guild (dev only) |
+| `DISCORD_SYNC_COMMANDS` | No | `true` | Set `false` to skip command sync on startup |
 
 \* Only the token for the active `BOT_MODE` is required.
 
@@ -87,17 +89,22 @@ python bot.py
 
 ```
 acim-bot/
-├── bot.py                # Main application (Discord + Telegram)
+├── bot.py                 # Main application (Discord + Telegram)
 ├── data/
-│   └── lessons.json      # All 365 lesson titles
-├── Dockerfile
-├── docker-compose.yml
-├── Makefile
-├── requirements.txt
-├── pyproject.toml
-├── .env.example
+│   └── lessons.json       # All 365 lesson titles
+├── tests/
+│   └── test_bot.py        # Smoke tests
+├── .github/
+│   └── workflows/
+│       └── ci.yml         # Lint + test + Docker build
+├── Dockerfile             # Multi-stage build, health check, non-root user
+├── docker-compose.yml     # Health check + graceful stop
+├── Makefile               # build/up/down/logs/health/restart/clean
+├── pyproject.toml         # Single source of truth for dependencies
+├── .env.example           # Documented env vars
 ├── .gitignore
-└── .dockerignore
+├── .dockerignore
+└── LICENSE                # MIT
 ```
 
 ---
