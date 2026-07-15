@@ -55,7 +55,8 @@ class TestLessonsJson:
             + list(range(171, 181)) # Review V
         )
 
-        pattern = re.compile(r"^Review [IVX]+ — \(\d+\) .+")
+        # Use a strict roman numeral pattern (only I, II, III, IV, V are valid for our reviews)
+        pattern = re.compile(r"^Review (I{1,3}|IV|V) — \(\d+\) .+")
 
         for n in review_lessons:
             title = lessons[str(n)]
