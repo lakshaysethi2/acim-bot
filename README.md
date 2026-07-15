@@ -108,6 +108,12 @@ python bot.py
                                📖 Lesson 293: All fear is past...
 ```
 
+> **Discord migration note:** The previous single `/acim` command (with optional
+> `random` flag) is now a slash-command group with three subcommands:
+> `lesson`, `random`, and `search`. Re-sync commands after deploy
+> (`DISCORD_SYNC_COMMANDS=true` on startup, or set `DISCORD_GUILD_ID` for faster
+> guild-scoped sync during development).
+
 ### Telegram
 
 ```

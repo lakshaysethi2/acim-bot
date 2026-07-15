@@ -114,6 +114,11 @@ def load_lessons() -> dict[str, str]:
     return _lessons
 
 
+def is_valid_lesson(number: int) -> bool:
+    """Return True if number is a valid lesson index (1-TOTAL_LESSONS)."""
+    return 1 <= number <= TOTAL_LESSONS
+
+
 def get_lesson(number: int) -> str | None:
     """Return the title for a lesson number (1-365), or None."""
     return load_lessons().get(str(number))
@@ -131,7 +136,11 @@ def get_random_lesson() -> tuple[int, str]:
 def search_lessons(
     query: str, max_results: int = ACIM_SEARCH_MAX_RESULTS,
 ) -> list[tuple[int, str]]:
-    """Search lesson titles by keyword. Returns up to *max_results* matches."""
+    """Search lesson titles by keyword. Returns up to max_results matches.
+
+    Case-insensitive substring match over the 365 titles, ordered by lesson
+    number. Stops once max_results matches are found.
+    """
     lessons = load_lessons()
     query_lower = query.lower().strip()
     if not query_lower:
@@ -144,11 +153,6 @@ def search_lessons(
             if len(results) >= max_results:
                 break
     return results
-
-
-def format_lesson_message(number: int, title: str) -> str:
-    """Format a single lesson response (plain text; Discord escapes separately)."""
-    return f"📖 Lesson {number}\n{title}"
 
 
 # ---------------------------------------------------------------------------
@@ -199,7 +203,7 @@ def _build_discord_bot() -> commands.Bot:
     )
     @app_commands.describe(number="Lesson number (1-365)")
     async def lesson(interaction: discord.Interaction, number: int) -> None:
-        if number < 1 or number > TOTAL_LESSONS:
+        if not is_valid_lesson(number):
             await interaction.response.send_message(
                 f"⚠️ Lesson number must be between 1 and {TOTAL_LESSONS}.",
                 ephemeral=True,
@@ -369,7 +373,7 @@ def _run_telegram_bot() -> None:
             )
             return
 
-        if number < 1 or number > TOTAL_LESSONS:
+        if not is_valid_lesson(number):
             await msg.reply_text(
                 f"⚠️ Lesson number must be between 1 and {TOTAL_LESSONS}."
             )

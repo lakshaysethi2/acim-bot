@@ -76,6 +76,15 @@ class TestBotModule:
         assert get_lesson(0) is None
         assert get_lesson(366) is None
 
+    def test_is_valid_lesson(self) -> None:
+        from bot import is_valid_lesson
+
+        assert is_valid_lesson(1) is True
+        assert is_valid_lesson(365) is True
+        assert is_valid_lesson(0) is False
+        assert is_valid_lesson(366) is False
+        assert is_valid_lesson(-1) is False
+
     def test_total_lessons_constant(self) -> None:
         from bot import TOTAL_LESSONS
 
