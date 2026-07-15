@@ -190,25 +190,23 @@ def _build_discord_bot() -> commands.Bot:
 
     @bot.tree.command(
         name="acim",
-        description="Look up an ACIM Workbook lesson by number (1–365) or 'random'",
+        description="Look up an ACIM Workbook lesson by number (1–365)",
     )
-    @app_commands.describe(lesson="Lesson number (1–365) or 'random'")
-    async def acim(interaction: discord.Interaction, lesson: str) -> None:
-        if lesson.strip().lower() == "random":
-            lesson_num = random.randint(1, TOTAL_LESSONS)
-        else:
-            try:
-                lesson_num = int(lesson.strip())
-            except ValueError:
-                await interaction.response.send_message(
-                    "⚠️ Please provide a valid number or 'random'.",
-                    ephemeral=True,
-                )
-                return
+    @app_commands.rename(is_random="random")
+    @app_commands.describe(
+        lesson="Lesson number (1–365)",
+        is_random="Get a random lesson (overrides lesson number)"
+    )
+    async def acim(
+        interaction: discord.Interaction,
+        lesson: int = 0,
+        is_random: bool = False,
+    ) -> None:
+        lesson_num = random.randint(1, TOTAL_LESSONS) if is_random else lesson
 
         if lesson_num < 1 or lesson_num > TOTAL_LESSONS:
             await interaction.response.send_message(
-                f"⚠️ Lesson number must be between 1 and {TOTAL_LESSONS}.",
+                f"⚠️ Please provide a valid lesson number (1–{TOTAL_LESSONS}) or choose 'random'.",
                 ephemeral=True,
             )
             return
@@ -277,7 +275,7 @@ def _run_telegram_bot() -> None:
             await msg.reply_text("Usage: /acim <lesson number 1-365> or /acim random")
             return
         
-        query = context.args[0].lower()
+        query = context.args[0].strip().lower()
         if query == "random":
             lesson = random.randint(1, TOTAL_LESSONS)
         else:
